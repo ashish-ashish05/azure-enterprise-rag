@@ -37,3 +37,10 @@ class BlobStorageClient:
             blob.name
             for blob in self._container_client.list_blobs()
         ]
+
+    def download_blob(self, blob_name: str) -> bytes:
+        """Download a blob and return its contents."""
+
+        blob_client = self._container_client.get_blob_client(blob_name)
+
+        return blob_client.download_blob().readall()
