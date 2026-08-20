@@ -13,3 +13,15 @@ class Document:
     content_type: str
     metadata: dict[str, Any] = field(default_factory=dict)
     created_at: datetime | None = None
+
+
+@dataclass
+class DocumentChunk:
+    """A retrievable chunk derived from an enterprise document."""
+
+    chunk_id: str
+    document_id: str
+    content: str
+    source: str
+    chunk_index: int
+    metadata: dict[str, Any] = field(default_factory=dict)
