@@ -48,9 +48,9 @@ class DocumentChunker:
             chunks.append(
                 DocumentChunk(
                     chunk_id=(
-                        f"{document.document_id}"
-                        f"#chunk-{chunk_index}"
-                    ),
+    f"{self._safe_document_id(document.document_id)}"
+    f"_chunk-{chunk_index}"
+),
                     document_id=document.document_id,
                     content=chunk_text,
                     source=document.source,
@@ -69,6 +69,16 @@ class DocumentChunker:
             chunk_index += 1
 
         return chunks
+
+    @staticmethod
+    def _safe_document_id(document_id: str) -> str:
+        """Convert a document ID into an Azure Search-safe key."""
+
+        return re.sub(
+        r"[^A-Za-z0-9_=-]",
+        "_",
+        document_id,
+    )
 
     @staticmethod
     def _tokenize(text: str) -> list[str]:

@@ -5,12 +5,12 @@ from enterprise_rag.config.settings import Settings
 
 
 class AzureOpenAIClient:
-    """Client factory for Azure OpenAI."""
+    """Client for Microsoft Foundry's OpenAI-compatible API."""
 
     def __init__(self, settings: Settings) -> None:
         token_provider = get_bearer_token_provider(
             DefaultAzureCredential(),
-            "https://ai.azure.com/.default",
+            "https://cognitiveservices.azure.com/.default",
         )
 
         endpoint = settings.azure_openai_endpoint.rstrip("/")
