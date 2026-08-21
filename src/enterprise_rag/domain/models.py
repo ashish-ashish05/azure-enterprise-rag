@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
+from enterprise_rag.domain.metadata import DocumentMetadata
 
 
 @dataclass
@@ -11,7 +12,9 @@ class Document:
     source: str
     content: str
     content_type: str
-    metadata: dict[str, Any] = field(default_factory=dict)
+    metadata: DocumentMetadata = field(
+        default_factory=DocumentMetadata
+    )
     created_at: datetime | None = None
 
 
