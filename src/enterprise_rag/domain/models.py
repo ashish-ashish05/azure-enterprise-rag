@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
+from enterprise_rag.domain.document_page import DocumentPage
 from enterprise_rag.domain.metadata import DocumentMetadata
 
 
@@ -15,6 +16,9 @@ class Document:
     metadata: DocumentMetadata = field(
         default_factory=DocumentMetadata
     )
+    pages: list[DocumentPage] = field(
+        default_factory=list
+    )
     created_at: datetime | None = None
 
 
@@ -28,3 +32,4 @@ class DocumentChunk:
     source: str
     chunk_index: int
     metadata: dict[str, Any] = field(default_factory=dict)
+

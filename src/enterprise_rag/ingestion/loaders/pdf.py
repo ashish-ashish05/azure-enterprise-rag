@@ -2,12 +2,15 @@ from io import BytesIO
 
 from pypdf import PdfReader
 
-from enterprise_rag.domain.models import Document
+from enterprise_rag.domain.models import (
+    Document,
+    DocumentPage,
+)
 from enterprise_rag.ingestion.loaders.base import DocumentLoader
 
 
 class PdfDocumentLoader(DocumentLoader):
-    """Extract text from PDF documents."""
+    """Extract text from PDF documents while preserving pages."""
 
     def load(
         self,
@@ -19,14 +22,26 @@ class PdfDocumentLoader(DocumentLoader):
 
         reader = PdfReader(BytesIO(content))
 
-        pages: list[str] = []
+        pages: list[DocumentPage] = []
 
-        for page in reader.pages:
+        for page_number, page in enumerate(
+            reader.pages,
+            start=1,
+        ):
             text = page.extract_text() or ""
-            pages.append(text.strip())
+            text = text.strip()
+
+            if text:
+                pages.append(
+                    DocumentPage(
+                        page_number=page_number,
+                        content=text,
+                    )
+                )
 
         full_text = "\n\n".join(
-            page for page in pages if page
+            page.content
+            for page in pages
         )
 
         return Document(
@@ -37,4 +52,5 @@ class PdfDocumentLoader(DocumentLoader):
             metadata={
                 "page_count": len(reader.pages),
             },
+            pages=pages,
         )
