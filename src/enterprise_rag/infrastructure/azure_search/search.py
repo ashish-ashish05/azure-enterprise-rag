@@ -1,3 +1,4 @@
+from datetime import date, datetime
 from typing import Any
 
 from azure.search.documents.models import VectorizedQuery
@@ -75,7 +76,9 @@ class AzureSearchIndexer:
             )
 
     @staticmethod
-    def _format_date(value: Any) -> str | None:
+    def _format_date(
+        value: Any,
+    ) -> str | None:
         if value is None:
             return None
 
@@ -113,12 +116,22 @@ class AzureSearchRetriever:
         query_embedding: list[float],
         *,
         top_k: int = 5,
+        department: str | None = None,
+        document_version: str | None = None,
+        effective_date_on_or_before: (
+            date | datetime | None
+        ) = None,
     ) -> list[RetrievalResult]:
-        """Run keyword and vector search together."""
+        """Run hybrid search with optional metadata filters."""
 
         if not query.strip():
             raise ValueError(
                 "Search query cannot be empty"
+            )
+
+        if top_k <= 0:
+            raise ValueError(
+                "top_k must be greater than zero"
             )
 
         vector_query = VectorizedQuery(
@@ -128,10 +141,19 @@ class AzureSearchRetriever:
             kind="vector",
         )
 
+        filters = self._build_filter(
+            department=department,
+            document_version=document_version,
+            effective_date_on_or_before=(
+                effective_date_on_or_before
+            ),
+        )
+
         results = self._search_client.search(
             search_text=query,
             vector_queries=[vector_query],
             select=self._SELECT_FIELDS,
+            filter=filters,
             top=top_k,
         )
 
@@ -139,6 +161,75 @@ class AzureSearchRetriever:
             self._to_result(result)
             for result in results
         ]
+
+    @staticmethod
+    def _build_filter(
+        *,
+        department: str | None,
+        document_version: str | None,
+        effective_date_on_or_before: (
+            date | datetime | None
+        ),
+    ) -> str | None:
+        """Build an Azure AI Search OData filter."""
+
+        filters: list[str] = []
+
+        if department is not None:
+            escaped_department = (
+                AzureSearchRetriever._escape_odata_string(
+                    department
+                )
+            )
+
+            filters.append(
+                f"department eq '{escaped_department}'"
+            )
+
+        if document_version is not None:
+            escaped_version = (
+                AzureSearchRetriever._escape_odata_string(
+                    document_version
+                )
+            )
+
+            filters.append(
+                f"document_version eq '{escaped_version}'"
+            )
+
+        if effective_date_on_or_before is not None:
+            if isinstance(
+                effective_date_on_or_before,
+                datetime,
+            ):
+                value = (
+                    effective_date_on_or_before.isoformat()
+                )
+            else:
+                value = (
+                    f"{effective_date_on_or_before.isoformat()}"
+                    "T23:59:59Z"
+                )
+
+            filters.append(
+                f"effective_date le {value}"
+            )
+
+        if not filters:
+            return None
+
+        return " and ".join(filters)
+
+    @staticmethod
+    def _escape_odata_string(
+        value: str,
+    ) -> str:
+        """Escape a string for an OData string literal."""
+
+        return value.replace(
+            "'",
+            "''",
+        )
 
     @staticmethod
     def _to_result(

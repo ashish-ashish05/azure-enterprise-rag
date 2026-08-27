@@ -4,6 +4,9 @@ from enterprise_rag.ingestion.chunking.splitter import DocumentChunker
 from enterprise_rag.ingestion.loaders.factory import (
     DocumentLoaderFactory,
 )
+from enterprise_rag.ingestion.metadata.extractor import (
+    DocumentMetadataExtractor,
+)
 from enterprise_rag.infrastructure.azure_openai.client import (
     AzureOpenAIClient,
 )
@@ -51,12 +54,37 @@ def main() -> None:
         f"Extracted {len(document.content.split())} words"
     )
 
+    metadata_extractor = DocumentMetadataExtractor()
+
+    metadata = metadata_extractor.extract(
+        document.content
+    )
+
+    document.metadata = metadata
+
+    print(
+        f"Document version: "
+        f"{metadata.document_version}"
+    )
+
+    print(
+        f"Effective date: "
+        f"{metadata.effective_date}"
+    )
+
+    print(
+        f"Policy owner: "
+        f"{metadata.policy_owner}"
+    )
+
     chunker = DocumentChunker(
         chunk_size=700,
         chunk_overlap=100,
     )
 
-    chunks: list[DocumentChunk] = chunker.split(document)
+    chunks: list[DocumentChunk] = chunker.split(
+        document
+    )
 
     print(f"Created {len(chunks)} chunks")
 
@@ -67,7 +95,9 @@ def main() -> None:
         settings=settings,
     )
 
-    embeddings = embedding_service.embed_chunks(chunks)
+    embeddings = embedding_service.embed_chunks(
+        chunks
+    )
 
     print(
         f"Generated {len(embeddings)} embeddings"

@@ -1,4 +1,5 @@
 import re
+from dataclasses import asdict
 
 from enterprise_rag.domain.models import (
     Document,
@@ -87,11 +88,9 @@ class DocumentChunker:
                         source=document.source,
                         chunk_index=global_chunk_index,
                         metadata={
-                            **document.metadata,
+                            **asdict(document.metadata),
                             "page": page.page_number,
-                            "chunk_size_words": len(
-                                chunk_words
-                            ),
+                            "chunk_size_words": len(chunk_words),
                         },
                     )
                 )
@@ -142,10 +141,9 @@ class DocumentChunker:
                     source=document.source,
                     chunk_index=chunk_index,
                     metadata={
-                        **document.metadata,
-                        "chunk_size_words": len(
-                            chunk_words
-                        ),
+                        **asdict(document.metadata),
+                        "page": page.page_number,
+                        "chunk_size_words": len(chunk_words),
                     },
                 )
             )
