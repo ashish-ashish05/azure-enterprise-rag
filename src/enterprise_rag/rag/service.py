@@ -91,12 +91,15 @@ class RAGService:
 
         sources = [
             SourceCitation(
-                source=result.source,
-                chunk_id=result.id,
-                chunk_index=result.chunk_index,
-                page=result.page,
-            )
-            for result in results
+            source=result.source,
+            chunk_id=result.id,
+            chunk_index=result.chunk_index,
+            page=result.page,
+            document_family_id=result.document_family_id,
+            document_version=result.document_version,
+            effective_date=result.effective_date,
+        )
+        for result in results
         ]
 
         return RAGResponse(

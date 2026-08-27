@@ -58,12 +58,26 @@ def main() -> None:
     print(response.answer)
 
     print()
-    print("SOURCES")
+    print("\nSOURCES")
 
     for source in response.sources:
         print(
-            f"- {source.source} "
-            f"(chunk {source.chunk_index})"
+            f"- Source: {source.source}"
+        )
+        print(
+            f"  Family: {source.document_family_id}"
+        )
+        print(
+            f"  Version: {source.document_version}"
+        )
+        print(
+            f"  Effective: {source.effective_date}"
+        )
+        print(
+            f"  Page: {source.page}"
+        )
+        print(
+            f"  Chunk: {source.chunk_index}"
         )
 
 

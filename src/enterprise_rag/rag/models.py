@@ -11,6 +11,9 @@ class SourceCitation:
     chunk_id: str
     chunk_index: int
     page: int | None = None
+    document_family_id: str | None = None
+    document_version: str | None = None
+    effective_date: str | None = None
 
 
 @dataclass(frozen=True)
