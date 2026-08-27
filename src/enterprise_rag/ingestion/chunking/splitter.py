@@ -84,6 +84,7 @@ class DocumentChunker:
                             f"_chunk-{global_chunk_index}"
                         ),
                         document_id=document.document_id,
+                        document_family_id=document.document_family_id,
                         content=chunk_text,
                         source=document.source,
                         chunk_index=global_chunk_index,
@@ -137,6 +138,7 @@ class DocumentChunker:
                         f"_chunk-{chunk_index}"
                     ),
                     document_id=document.document_id,
+                    document_family_id=document.document_family_id,
                     content=chunk_text,
                     source=document.source,
                     chunk_index=chunk_index,

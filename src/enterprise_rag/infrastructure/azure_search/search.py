@@ -42,6 +42,7 @@ class AzureSearchIndexer:
                     "content": chunk.content,
                     "content_vector": embedding,
                     "document_id": chunk.document_id,
+                    "document_family_id": chunk.document_family_id,
                     "source": chunk.source,
                     "chunk_index": chunk.chunk_index,
                     "department": chunk.metadata.get(

@@ -17,6 +17,7 @@ class PdfDocumentLoader(DocumentLoader):
         content: bytes,
         *,
         document_id: str,
+        document_family_id: str,
         source: str,
     ) -> Document:
 
@@ -46,6 +47,7 @@ class PdfDocumentLoader(DocumentLoader):
 
         return Document(
             document_id=document_id,
+            document_family_id=document_family_id,
             source=source,
             content=full_text,
             content_type="application/pdf",

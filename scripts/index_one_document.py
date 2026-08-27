@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from enterprise_rag.config.settings import get_settings
 from enterprise_rag.domain.models import DocumentChunk
 from enterprise_rag.ingestion.chunking.splitter import DocumentChunker
@@ -38,7 +40,10 @@ def main() -> None:
 
     blob_name = blob_names[0]
 
+    document_family_id = Path(blob_name).stem
+
     print(f"Indexing: {blob_name}")
+    print(f"Document family: {document_family_id}")
 
     content = blob_storage.download_blob(blob_name)
 
@@ -47,6 +52,7 @@ def main() -> None:
     document = loader.load(
         content,
         document_id=blob_name,
+        document_family_id=document_family_id,
         source=blob_name,
     )
 

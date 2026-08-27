@@ -10,6 +10,7 @@ class Document:
     """Normalized document representation used by the ingestion pipeline."""
 
     document_id: str
+    document_family_id: str
     source: str
     content: str
     content_type: str
@@ -21,15 +22,16 @@ class Document:
     )
     created_at: datetime | None = None
 
-
 @dataclass
 class DocumentChunk:
     """A retrievable chunk derived from an enterprise document."""
 
     chunk_id: str
     document_id: str
+    document_family_id: str
     content: str
     source: str
     chunk_index: int
-    metadata: dict[str, Any] = field(default_factory=dict)
-
+    metadata: dict[str, Any] = field(
+        default_factory=dict
+    )

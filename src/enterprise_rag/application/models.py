@@ -8,6 +8,7 @@ class RetrievalResult:
     id: str
     content: str
     document_id: str
+    document_family_id: str
     source: str
     chunk_index: int
     score: float | None = None

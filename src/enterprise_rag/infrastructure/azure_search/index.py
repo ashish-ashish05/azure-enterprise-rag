@@ -48,6 +48,11 @@ class AzureSearchIndexManager:
                     filterable=True,
                 ),
                 SimpleField(
+                    name="document_family_id",
+                    type=SearchFieldDataType.String,
+                    filterable=True,
+                ),
+                SimpleField(
                     name="source",
                     type=SearchFieldDataType.String,
                     filterable=True,
