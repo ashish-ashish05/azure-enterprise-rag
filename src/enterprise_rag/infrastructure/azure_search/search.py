@@ -42,7 +42,9 @@ class AzureSearchIndexer:
                     "content": chunk.content,
                     "content_vector": embedding,
                     "document_id": chunk.document_id,
-                    "document_family_id": chunk.document_family_id,
+                    "document_family_id": (
+                        chunk.document_family_id
+                    ),
                     "source": chunk.source,
                     "chunk_index": chunk.chunk_index,
                     "department": chunk.metadata.get(
@@ -96,6 +98,7 @@ class AzureSearchRetriever:
         "id",
         "content",
         "document_id",
+        "document_family_id",
         "source",
         "department",
         "document_version",
@@ -117,6 +120,7 @@ class AzureSearchRetriever:
         query_embedding: list[float],
         *,
         top_k: int = 5,
+        document_family_id: str | None = None,
         department: str | None = None,
         document_version: str | None = None,
         effective_date_on_or_before: (
@@ -143,6 +147,7 @@ class AzureSearchRetriever:
         )
 
         filters = self._build_filter(
+            document_family_id=document_family_id,
             department=department,
             document_version=document_version,
             effective_date_on_or_before=(
@@ -166,6 +171,7 @@ class AzureSearchRetriever:
     @staticmethod
     def _build_filter(
         *,
+        document_family_id: str | None,
         department: str | None,
         document_version: str | None,
         effective_date_on_or_before: (
@@ -176,6 +182,18 @@ class AzureSearchRetriever:
 
         filters: list[str] = []
 
+        if document_family_id is not None:
+            escaped_family_id = (
+                AzureSearchRetriever._escape_odata_string(
+                    document_family_id
+                )
+            )
+
+            filters.append(
+                "document_family_id "
+                f"eq '{escaped_family_id}'"
+            )
+
         if department is not None:
             escaped_department = (
                 AzureSearchRetriever._escape_odata_string(
@@ -184,7 +202,8 @@ class AzureSearchRetriever:
             )
 
             filters.append(
-                f"department eq '{escaped_department}'"
+                "department "
+                f"eq '{escaped_department}'"
             )
 
         if document_version is not None:
@@ -195,7 +214,8 @@ class AzureSearchRetriever:
             )
 
             filters.append(
-                f"document_version eq '{escaped_version}'"
+                "document_version "
+                f"eq '{escaped_version}'"
             )
 
         if effective_date_on_or_before is not None:
@@ -213,7 +233,8 @@ class AzureSearchRetriever:
                 )
 
             filters.append(
-                f"effective_date le {value}"
+                "effective_date "
+                f"le {value}"
             )
 
         if not filters:
@@ -240,6 +261,9 @@ class AzureSearchRetriever:
             id=result["id"],
             content=result["content"],
             document_id=result["document_id"],
+            document_family_id=result[
+                "document_family_id"
+            ],
             source=result["source"],
             chunk_index=result["chunk_index"],
             score=result.get("@search.score"),
