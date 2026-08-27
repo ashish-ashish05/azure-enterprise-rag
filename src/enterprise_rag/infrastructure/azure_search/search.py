@@ -22,7 +22,7 @@ class AzureSearchIndexer:
         self,
         chunks: list[Any],
         embeddings: list[list[float]],
-    ) -> None:
+    ) -> int:
         """Upload chunks and embeddings to Azure AI Search."""
 
         if len(chunks) != len(embeddings):
@@ -77,6 +77,7 @@ class AzureSearchIndexer:
             raise RuntimeError(
                 f"Failed to index {len(failed)} documents"
             )
+        return len(documents)
 
     @staticmethod
     def _format_date(

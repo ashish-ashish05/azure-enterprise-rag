@@ -113,13 +113,13 @@ def main() -> None:
 
     indexer = AzureSearchIndexer(search_client)
 
-    indexer.index_chunks(
+    indexed_count = indexer.index_chunks(
         chunks,
         embeddings,
     )
 
     print(
-        f"Indexed {len(chunks)} chunks into "
+        f"Indexed {indexed_count} chunks into "
         f"{settings.azure_search_index_name}"
     )
 
