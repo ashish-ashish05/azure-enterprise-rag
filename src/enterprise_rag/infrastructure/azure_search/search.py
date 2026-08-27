@@ -371,6 +371,17 @@ class AzureSearchRetriever:
 
         return " and ".join(filters)
 
+
+    @staticmethod
+    def _escape_odata_string(
+            value: str,
+        ) -> str:
+            """Escape a string for an OData string literal."""
+        
+            return value.replace(
+                "'",
+                "''",
+            )
     
 
     @staticmethod

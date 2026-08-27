@@ -16,6 +16,11 @@ from enterprise_rag.rag.prompt import (
     build_user_prompt,
 )
 
+from enterprise_rag.rag.family_resolver import (
+    DocumentFamilyResolver,
+    ExplicitDocumentFamilyResolver,
+)
+
 
 class RAGService:
     """Orchestrate retrieval and grounded generation."""
@@ -25,10 +30,12 @@ class RAGService:
         embedding_service: AzureOpenAIEmbeddingService,
         retriever: AzureSearchRetriever,
         chat_service: AzureOpenAIChatService,
+        family_resolver: DocumentFamilyResolver | None = None,
     ) -> None:
         self._embedding_service = embedding_service
         self._retriever = retriever
         self._chat_service = chat_service
+        self._family_resolver = (family_resolver or ExplicitDocumentFamilyResolver())
 
     def answer(
         self,
@@ -43,6 +50,13 @@ class RAGService:
             raise ValueError(
                 "Question cannot be empty"
             )
+
+        document_family_id = (
+            self._family_resolver.resolve(
+                question,
+                document_family_id,
+            )
+        )
 
         query_embedding = (
             self._embedding_service.embed_text(question)
