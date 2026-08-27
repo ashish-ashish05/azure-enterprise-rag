@@ -38,75 +38,11 @@ def main() -> None:
             "No documents found in the Azure Blob container."
         )
 
-    blob_name = blob_names[0]
-
-    document_family_id = Path(blob_name).stem
-
-    print(f"Indexing: {blob_name}")
-    print(f"Document family: {document_family_id}")
-
-    content = blob_storage.download_blob(blob_name)
-
-    loader = DocumentLoaderFactory.create(blob_name)
-
-    document = loader.load(
-        content,
-        document_id=blob_name,
-        document_family_id=document_family_id,
-        source=blob_name,
-    )
-
-    print(
-        f"Extracted {len(document.content.split())} words"
-    )
-
-    metadata_extractor = DocumentMetadataExtractor()
-
-    metadata = metadata_extractor.extract(
-        document.content
-    )
-
-    document.metadata = metadata
-
-    print(
-        f"Document version: "
-        f"{metadata.document_version}"
-    )
-
-    print(
-        f"Effective date: "
-        f"{metadata.effective_date}"
-    )
-
-    print(
-        f"Policy owner: "
-        f"{metadata.policy_owner}"
-    )
-
-    chunker = DocumentChunker(
-        chunk_size=700,
-        chunk_overlap=100,
-    )
-
-    chunks: list[DocumentChunk] = chunker.split(
-        document
-    )
-
-    print(f"Created {len(chunks)} chunks")
-
     openai_client = AzureOpenAIClient(settings)
 
     embedding_service = AzureOpenAIEmbeddingService(
         client=openai_client,
         settings=settings,
-    )
-
-    embeddings = embedding_service.embed_chunks(
-    chunks
-)
-
-    print(
-        f"Generated {len(embeddings)} embeddings"
     )
 
     search_client = AzureSearchClient(settings)
@@ -115,23 +51,141 @@ def main() -> None:
         search_client
     )
 
-    deleted_count = indexer.delete_chunks_for_document(
-        document.document_id
+    metadata_extractor = DocumentMetadataExtractor()
+
+    chunker = DocumentChunker(
+        chunk_size=700,
+        chunk_overlap=100,
     )
 
+    total_documents = 0
+    total_chunks = 0
+
+    for blob_name in blob_names:
+        print()
+        print("=" * 60)
+        print(f"Indexing: {blob_name}")
+        print("=" * 60)
+
+        try:
+            content = blob_storage.download_blob(
+                blob_name
+            )
+
+            document_family_id = Path(
+                blob_name
+            ).stem
+
+            print(
+                f"Document family: "
+                f"{document_family_id}"
+            )
+
+            loader = DocumentLoaderFactory.create(
+                blob_name
+            )
+
+            document = loader.load(
+                content,
+                document_id=blob_name,
+                source=blob_name,
+                document_family_id=document_family_id,
+            )
+
+            print(
+                f"Extracted "
+                f"{len(document.content.split())} words"
+            )
+
+            metadata = metadata_extractor.extract(
+                document.content
+            )
+
+            document.metadata = metadata
+
+            print(
+                f"Document version: "
+                f"{metadata.document_version}"
+            )
+
+            print(
+                f"Effective date: "
+                f"{metadata.effective_date}"
+            )
+
+            print(
+                f"Policy owner: "
+                f"{metadata.policy_owner}"
+            )
+
+            chunks: list[DocumentChunk] = (
+                chunker.split(document)
+            )
+
+            print(
+                f"Created {len(chunks)} chunks"
+            )
+
+            if not chunks:
+                print(
+                    "Skipping document because it "
+                    "contains no extractable content."
+                )
+                continue
+
+            embeddings = (
+                embedding_service.embed_chunks(
+                    chunks
+                )
+            )
+
+            print(
+                f"Generated {len(embeddings)} embeddings"
+            )
+
+            deleted_count = (
+                indexer.delete_chunks_for_document(
+                    document.document_id
+                )
+            )
+
+            print(
+                f"Deleted {deleted_count} existing chunks"
+            )
+
+            indexed_count = (
+                indexer.index_chunks(
+                    chunks,
+                    embeddings,
+                )
+            )
+
+            print(
+                f"Indexed {indexed_count} chunks"
+            )
+
+            total_documents += 1
+            total_chunks += indexed_count
+
+        except Exception as exc:
+            print(
+                f"FAILED: {blob_name}"
+            )
+            print(
+                f"Reason: {exc}"
+            )
+
+    print()
+    print("=" * 60)
+    print("INGESTION SUMMARY")
+    print("=" * 60)
     print(
-        f"Deleted {deleted_count} existing chunks"
+        f"Documents indexed: {total_documents}"
     )
-
-    indexed_count = indexer.index_chunks(
-        chunks,
-        embeddings,
-    )
-
     print(
-        f"Indexed {indexed_count} chunks into "
-        f"{settings.azure_search_index_name}"
+        f"Chunks indexed: {total_chunks}"
     )
+
 
 if __name__ == "__main__":
     main()
