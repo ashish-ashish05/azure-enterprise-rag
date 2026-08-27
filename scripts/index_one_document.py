@@ -102,8 +102,8 @@ def main() -> None:
     )
 
     embeddings = embedding_service.embed_chunks(
-        chunks
-    )
+    chunks
+)
 
     print(
         f"Generated {len(embeddings)} embeddings"
@@ -111,7 +111,17 @@ def main() -> None:
 
     search_client = AzureSearchClient(settings)
 
-    indexer = AzureSearchIndexer(search_client)
+    indexer = AzureSearchIndexer(
+        search_client
+    )
+
+    deleted_count = indexer.delete_chunks_for_document(
+        document.document_id
+    )
+
+    print(
+        f"Deleted {deleted_count} existing chunks"
+    )
 
     indexed_count = indexer.index_chunks(
         chunks,
@@ -122,7 +132,6 @@ def main() -> None:
         f"Indexed {indexed_count} chunks into "
         f"{settings.azure_search_index_name}"
     )
-
 
 if __name__ == "__main__":
     main()

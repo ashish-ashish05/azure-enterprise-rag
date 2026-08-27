@@ -79,6 +79,74 @@ class AzureSearchIndexer:
             )
         return len(documents)
 
+
+
+
+    def delete_chunks_for_document(
+        self,
+        document_id: str,
+    ) -> int:
+        """Delete all indexed chunks belonging to a document."""
+
+        if not document_id.strip():
+            raise ValueError(
+                "document_id cannot be empty"
+            )
+
+        results = self._search_client.search(
+            search_text="*",
+            filter=(
+                "document_id eq "
+                f"'{self._escape_odata_string(document_id)}'"
+            ),
+            select=["id"],
+        )
+
+        chunk_ids = [
+            result["id"]
+            for result in results
+        ]
+
+        if not chunk_ids:
+            return 0
+
+        delete_documents = [
+            {"id": chunk_id}
+            for chunk_id in chunk_ids
+        ]
+
+        delete_results = (
+            self._search_client.delete_documents(
+            documents=delete_documents
+            )
+        )
+
+        failed = [
+            result
+            for result in delete_results
+            if not result.succeeded
+        ]
+
+        if failed:
+            raise RuntimeError(
+                f"Failed to delete {len(failed)} documents"
+            )
+
+        return len(delete_documents)
+
+
+    @staticmethod
+    def _escape_odata_string(
+            value: str,
+        ) -> str:
+            """Escape a string for an OData string literal."""
+    
+            return value.replace(
+                "'",
+                "''",
+            )
+    
+
     @staticmethod
     def _format_date(
         value: Any,
@@ -303,16 +371,7 @@ class AzureSearchRetriever:
 
         return " and ".join(filters)
 
-    @staticmethod
-    def _escape_odata_string(
-        value: str,
-    ) -> str:
-        """Escape a string for an OData string literal."""
-
-        return value.replace(
-            "'",
-            "''",
-        )
+    
 
     @staticmethod
     def _to_result(
@@ -338,3 +397,5 @@ class AzureSearchRetriever:
             page=result.get("page"),
             section=result.get("section"),
         )
+
+    
