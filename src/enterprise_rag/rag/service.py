@@ -35,6 +35,7 @@ class RAGService:
         question: str,
         *,
         top_k: int = 5,
+        document_family_id: str | None = None,
     ) -> RAGResponse:
         """Answer a question using retrieved enterprise context."""
 
@@ -47,10 +48,21 @@ class RAGService:
             self._embedding_service.embed_text(question)
         )
 
+        current_version = None
+
+        if document_family_id is not None:
+            current_version = (
+            self._retriever.get_current_version(
+                document_family_id
+            )
+        )
+
         results = self._retriever.hybrid_search(
             query=question,
             query_embedding=query_embedding,
             top_k=top_k,
+            document_family_id=document_family_id,
+            document_version=current_version,
         )
 
         if not results:

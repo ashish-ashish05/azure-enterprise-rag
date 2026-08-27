@@ -45,8 +45,8 @@ def main() -> None:
     question = "What is the expense policy?"
 
     response = rag_service.answer(
-        question,
-        top_k=5,
+        question="What is the expense policy?",
+        document_family_id="ExpensePolicy",
     )
 
     print()
