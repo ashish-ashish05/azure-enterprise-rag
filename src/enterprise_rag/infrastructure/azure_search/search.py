@@ -255,6 +255,7 @@ class AzureSearchRetriever:
         effective_date_on_or_before: (
             date | datetime | None
         ) = None,
+        min_score: float | None = None,
     ) -> list[RetrievalResult]:
         """Run hybrid search with optional metadata filters."""
 
@@ -266,6 +267,11 @@ class AzureSearchRetriever:
         if top_k <= 0:
             raise ValueError(
                 "top_k must be greater than zero"
+            )
+
+        if min_score is not None and min_score < 0:
+            raise ValueError(
+                "min_score cannot be negative"
             )
 
         vector_query = VectorizedQuery(
@@ -292,10 +298,22 @@ class AzureSearchRetriever:
             top=top_k,
         )
 
-        return [
+        retrieval_results = [
             self._to_result(result)
             for result in results
         ]
+
+        if min_score is not None:
+            retrieval_results = [
+            result
+            for result in retrieval_results
+            if result.score is not None
+            and result.score >= min_score
+        ]
+
+        
+        return retrieval_results
+
 
     @staticmethod
     def _build_filter(

@@ -43,6 +43,7 @@ class RAGService:
         *,
         top_k: int = 5,
         document_family_id: str | None = None,
+        min_score: float | None = None,
     ) -> RAGResponse:
         """Answer a question using retrieved enterprise context."""
 
@@ -77,6 +78,7 @@ class RAGService:
             top_k=top_k,
             document_family_id=document_family_id,
             document_version=current_version,
+            min_score=min_score,
         )
 
         if not results:
