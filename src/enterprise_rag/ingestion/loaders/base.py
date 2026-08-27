@@ -12,6 +12,7 @@ class DocumentLoader(ABC):
         content: bytes,
         *,
         document_id: str,
+        document_family_id: str,
         source: str,
     ) -> Document:
         """Load raw bytes into a normalized Document."""

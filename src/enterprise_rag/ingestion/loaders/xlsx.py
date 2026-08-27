@@ -14,9 +14,9 @@ class XlsxDocumentLoader(DocumentLoader):
         content: bytes,
         *,
         document_id: str,
+        document_family_id: str,
         source: str,
     ) -> Document:
-
         workbook = load_workbook(
             filename=BytesIO(content),
             read_only=True,
@@ -29,7 +29,9 @@ class XlsxDocumentLoader(DocumentLoader):
         for worksheet in workbook.worksheets:
             rows: list[str] = []
 
-            for row in worksheet.iter_rows(values_only=True):
+            for row in worksheet.iter_rows(
+                values_only=True
+            ):
                 values = [
                     str(value).strip()
                     for value in row
@@ -37,7 +39,9 @@ class XlsxDocumentLoader(DocumentLoader):
                 ]
 
                 if values:
-                    rows.append(" | ".join(values))
+                    rows.append(
+                        " | ".join(values)
+                    )
 
             if rows:
                 sections.append(
@@ -49,6 +53,7 @@ class XlsxDocumentLoader(DocumentLoader):
 
         return Document(
             document_id=document_id,
+            document_family_id=document_family_id,
             source=source,
             content="\n\n".join(sections),
             content_type=(

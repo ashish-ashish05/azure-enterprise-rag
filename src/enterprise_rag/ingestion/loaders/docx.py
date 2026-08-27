@@ -14,9 +14,9 @@ class DocxDocumentLoader(DocumentLoader):
         content: bytes,
         *,
         document_id: str,
+        document_family_id: str,
         source: str,
     ) -> Document:
-
         document = DocxDocument(BytesIO(content))
 
         paragraphs = [
@@ -29,6 +29,7 @@ class DocxDocumentLoader(DocumentLoader):
 
         return Document(
             document_id=document_id,
+            document_family_id=document_family_id,
             source=source,
             content=full_text,
             content_type=(

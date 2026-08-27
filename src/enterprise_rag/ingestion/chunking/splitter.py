@@ -84,14 +84,18 @@ class DocumentChunker:
                             f"_chunk-{global_chunk_index}"
                         ),
                         document_id=document.document_id,
-                        document_family_id=document.document_family_id,
+                        document_family_id=(
+                            document.document_family_id
+                        ),
                         content=chunk_text,
                         source=document.source,
                         chunk_index=global_chunk_index,
                         metadata={
                             **asdict(document.metadata),
                             "page": page.page_number,
-                            "chunk_size_words": len(chunk_words),
+                            "chunk_size_words": len(
+                                chunk_words
+                            ),
                         },
                     )
                 )
@@ -109,7 +113,7 @@ class DocumentChunker:
         self,
         document: Document,
     ) -> list[DocumentChunk]:
-        """Fallback for documents without page information."""
+        """Split documents without page information."""
 
         words = self._tokenize(document.content)
 
@@ -138,14 +142,18 @@ class DocumentChunker:
                         f"_chunk-{chunk_index}"
                     ),
                     document_id=document.document_id,
-                    document_family_id=document.document_family_id,
+                    document_family_id=(
+                        document.document_family_id
+                    ),
                     content=chunk_text,
                     source=document.source,
                     chunk_index=chunk_index,
                     metadata={
                         **asdict(document.metadata),
-                        "page": page.page_number,
-                        "chunk_size_words": len(chunk_words),
+                        "page": None,
+                        "chunk_size_words": len(
+                            chunk_words
+                        ),
                     },
                 )
             )
