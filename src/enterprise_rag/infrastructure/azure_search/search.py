@@ -114,6 +114,66 @@ class AzureSearchRetriever:
     ) -> None:
         self._search_client = client.search_client
 
+
+
+
+
+    def get_current_version(
+        self,
+        document_family_id: str,
+        *,
+        as_of: date | datetime | None = None,
+    ) -> str | None:
+        """Return the latest effective document version."""
+
+        if not document_family_id.strip():
+            raise ValueError(
+                "document_family_id cannot be empty"
+            )
+
+        effective_as_of = as_of or date.today()
+
+        if isinstance(effective_as_of, datetime):
+            effective_date = effective_as_of.date()
+        else:
+            effective_date = effective_as_of
+
+        escaped_family_id = (
+            self._escape_odata_string(
+                document_family_id
+            )
+        )
+
+        filter_expression = (
+            "document_family_id "
+            f"eq '{escaped_family_id}' "
+            "and effective_date "
+            f"le {effective_date.isoformat()}T23:59:59Z"
+        )
+
+        results = self._search_client.search(
+            search_text="*",
+            filter=filter_expression,
+            select=[
+                "document_family_id",
+                "document_version",
+                "effective_date",
+            ],
+            order_by=[
+                "effective_date desc"
+            ],
+            top=1,
+        )
+
+        for result in results:
+            return result.get("document_version")
+
+        return None
+
+
+
+
+
     def hybrid_search(
         self,
         query: str,
